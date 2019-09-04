@@ -49,8 +49,11 @@ server.post(`/api/posts`, (req, res) => {
   }
 });
 
-// 2. POST request to /api/posts/:id/comments
-server.post(`/api/posts/:id/comments`, (req, res) => {});
+// // 2. POST request to /api/posts/:id/comments
+// server.post(`/api/posts/:id/comments`, (req, res) => {
+//   console.log(req.params.id);
+//   res.end();
+// });
 
 // 3. When the client makes a GET request to /api/posts
 server.get(`/api/posts`, (req, res) => {
@@ -72,13 +75,51 @@ server.get(`/api/posts`, (req, res) => {
 //   - return HTTP status code `404` (Not Found).
 //   - return the following JSON object: `{ message: "The post with the specified ID does not exist." }`.
 
-server.get(`/api/posts:id`, (req, res) => {
-  db.findById();
-});
+// server.get(`/api/posts/:id`, (req, res) => {
+//   const id = req.params.id;
+//   console.log(id);
+//   db.findById(id)
+//     .then(id => {
+//       console.log(id);
+//       if (post[0]) {
+//         // if there is a value in the array returned
+//         res.status(200).json(post);
+//       } else {
+//         res
+//           .status(404)
+//           .json({ message: "The post with the specified ID does not exist." });
+//       }
+//     })
+//     .catch(err => {
+//       console.log(err);
+//       res
+//         .status(500)
+//         .json({ message: "There was a server error retrieving the post." }); // when would this be triggered?
+//     });
+// });
 
 // 5. When the client makes a GET request to /api/posts/:id/comments
 
 // 6. When the client makes a DELETE request to /api/posts/:id
+server.delete(`/api/posts/:id`, (req, res) => {
+  const id = req.params.id;
+  db.remove(id) // returns number of records deleted
+    .then(post => {
+      console.log("DELETE", typeof post);
+      if (post === 1) {
+        // better way to do this?
+        res.status(200).json({ message: `Post id ${id} has been deleted` });
+      } else {
+        res
+          .status(404)
+          .json({ message: "The post with the specified ID does not exist." });
+      }
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ error: "The post could not be removed" });
+    });
+});
 
 // 7. When the client makes a PUT request to /api/posts/:id
 
