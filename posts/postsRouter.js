@@ -66,7 +66,6 @@ router.post(`/:id/comments`, (req, res) => {
       .status(400)
       .json({ errorMessage: "Please provide text for the comment." });
   } else {
-    // If the post with the specified id is not found:
     db.findById(postId).then(post => {
       // If the information about the comment is valid:
       if (post[0]) {
@@ -88,6 +87,7 @@ router.post(`/:id/comments`, (req, res) => {
             });
           });
       } else {
+        // If the post with the specified id is not found:
         res
           .status(404)
           .json({ message: "The post with the specified ID does not exist." });
@@ -168,23 +168,29 @@ router.put(`/:id`, (req, res) => {
   const editedPost = req.body;
 
   if (editedPost.title && editedPost.contents) {
-    db.findById(id).then(post => {
-      // if the post exists, update it
-      if (post[0]) {
-        db.update(id, editedPost)
+    // If the post is found and the new information is valid:
+    db.update(id, editedPost).then(updatedPost => {
+      // GET POST
+      if (updatedPost) {
+        db.findById(id)
           .then(post => {
-            res.status(200).json(post);
+            if (post[0]) {
+              res.status(200).json(post[0]);
+            } else {
+              res.status(404).json({
+                message: "The post with the specified ID does not exist."
+              });
+            }
           })
           .catch(err => {
-            res
-              .status(500)
-              .json({ error: "The post information could not be modified." });
+            res.status(500).json({
+              message: "There was a router error retrieving the post."
+            });
           });
-        // if the post doesn't exist, return error
       } else {
         res
           .status(404)
-          .json({ message: "The post with the specified ID does not exist." });
+          .json({ error: "The post with the specified ID does not exist." });
       }
     });
   } else {
