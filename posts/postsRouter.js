@@ -54,7 +54,7 @@ router.post(`/`, (req, res) => {
   }
 });
 
-// When the client makes a POST request to /api/posts/:id/comments (NEEDS WORK)
+// When the client makes a POST request to /api/posts/:id/comments
 
 router.post(`/:id/comments`, (req, res) => {
   const addedComment = req.body;
@@ -69,7 +69,7 @@ router.post(`/:id/comments`, (req, res) => {
     db.findById(postId).then(post => {
       // If the information about the comment is valid:
       if (post[0]) {
-        db.insertComment(addedComment)
+        db.insertComment({ ...addedComment, post_id: postId }) // comment requires post_id
           .then(comment =>
             db
               .findCommentById(comment.id)
