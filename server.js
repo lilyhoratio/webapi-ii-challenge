@@ -50,10 +50,39 @@ server.post(`/api/posts`, (req, res) => {
 });
 
 // // 2. POST request to /api/posts/:id/comments
-// server.post(`/api/posts/:id/comments`, (req, res) => {
-//   console.log(req.params.id);
-//   res.end();
-// });
+
+server.post("/api/posts/:id/comments", (req, res) => {
+  const addedComment = req.body;
+  const postId = req.params.id;
+
+  if (!addedComment.text) {
+    res
+      .status(400)
+      .json({ errorMessage: "Please provide text for the comment." });
+  } else {
+    db.findById(postId).then(post => {
+      if (post[0]) {
+        db.insertComment(addedComment)
+          .then(comment =>
+            db.findCommentById(comment.id).then(commentInfo => {
+              res.status(201).json(commentInfo);
+            })
+          )
+          .catch(err => {
+            console.log(err);
+            res.status(500).json({
+              error:
+                "There was an error while saving the comment to the database"
+            });
+          });
+      } else {
+        res
+          .status(404)
+          .json({ message: "The post with the specified ID does not exist." });
+      }
+    });
+  }
+});
 
 // 3. When the client makes a GET request to /api/posts
 server.get(`/api/posts`, (req, res) => {
@@ -75,30 +104,46 @@ server.get(`/api/posts`, (req, res) => {
 //   - return HTTP status code `404` (Not Found).
 //   - return the following JSON object: `{ message: "The post with the specified ID does not exist." }`.
 
-// server.get(`/api/posts/:id`, (req, res) => {
-//   const id = req.params.id;
-//   console.log(id);
-//   db.findById(id)
-//     .then(id => {
-//       console.log(id);
-//       if (post[0]) {
-//         // if there is a value in the array returned
-//         res.status(200).json(post);
-//       } else {
-//         res
-//           .status(404)
-//           .json({ message: "The post with the specified ID does not exist." });
-//       }
-//     })
-//     .catch(err => {
-//       console.log(err);
-//       res
-//         .status(500)
-//         .json({ message: "There was a server error retrieving the post." }); // when would this be triggered?
-//     });
-// });
+server.get(`/api/posts/:id`, (req, res) => {
+  const id = req.params.id;
+  db.findById(id)
+    .then(post => {
+      if (post[0]) {
+        // if there is a value in the array returned, return the post
+        res.status(200).json(post[0]);
+      } else {
+        res
+          .status(404)
+          .json({ message: "The post with the specified ID does not exist." });
+      }
+    })
+    .catch(err => {
+      console.log(err);
+      res
+        .status(500)
+        .json({ message: "There was a server error retrieving the post." }); // when would this be triggered?
+    });
+});
 
 // 5. When the client makes a GET request to /api/posts/:id/comments
+server.get(`/api/posts/:id/comments`, (req, res) => {
+  const postId = req.params.id;
+  db.findPostComments(postId)
+    .then(comments => {
+      if (comments[0]) {
+        res.status(200).json(comments);
+      } else {
+        res
+          .status(404)
+          .json({ message: "The post with the specified ID does not exist." });
+      }
+    })
+    .catch(err => {
+      res
+        .status(500)
+        .json({ error: "The comments information could not be retrieved." });
+    });
+});
 
 // 6. When the client makes a DELETE request to /api/posts/:id
 server.delete(`/api/posts/:id`, (req, res) => {
