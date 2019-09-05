@@ -1,6 +1,7 @@
 const express = require("express");
-const db = require("../data/db.js");
 const router = express.Router();
+// const router = require("express").Router();
+const db = require("../data/db.js");
 
 // router can have middleware that applies only to the router
 router.use(express.json());
@@ -162,7 +163,7 @@ router.delete(`/:id`, (req, res) => {
     });
 });
 
-// When the client makes a PUT request to /api/posts/:id (NEEDS WORK)
+// When the client makes a PUT request to /api/posts/:id
 router.put(`/:id`, (req, res) => {
   const id = req.params.id;
   const editedPost = req.body;
